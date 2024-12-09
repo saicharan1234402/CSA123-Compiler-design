@@ -1,0 +1,110 @@
+#include <stdio.h>
+#define N 11 // no of total vertices in the graph.  
+typedef enum {FALSE, TRUE} bool; 
+typedef struct node node;  
+struct node 
+{ 
+	int count; // for arraynodes : in-degree. 
+	// for listnodes : vertex no this vertex is connected to. 
+	// if this node is out of graph : −1. 
+	// if this has 0 indegree then it occurs in zerolist. node *next; 
+};  
+node graph[N]; 
+node *zerolist;  
+void addToZerolist( int v ) 
+{ 
+	/* * adds v to zerolist as v has 0 predecessors. */ 
+	node *ptr = (node *)malloc( sizeof(node) ); 
+	ptr->count = v; 
+	ptr->next = zerolist; 
+	zerolist = ptr; 
+}  
+void buildGraph( int a[][2], int edges ) 
+{ 
+	/* * fills global graph with input given in a. * a[i][0] is src vertex and 		a[i][1] is dst vertex. */ 
+	int i;  // init graph. 
+	for( i=0; i<N; ++i ) 
+	{ 
+		graph[i].count = 0; 
+		graph[i].next = NULL; 
+	}  // now add the list entries. 
+	for( i=0; i<edges; ++i ) 
+	{ 
+		// add new node to src list. 
+		node *ptr = (node *)malloc( sizeof(node) ); 
+		ptr->count = a[i][1]; 
+		ptr->next = graph[ a[i][0] ].next; 
+		graph[ a[i][0] ].next = ptr; 	
+		// increase indegree of dst. 
+		graph[ a[i][1] ].count++; 
+	}  // now create list of zero
+	predecessors. zerolist = NULL; // list of vertices having 0 predecessors. 
+	for( i=0; i<N; ++i ) 
+	if( graph[i].count == 0 ) 
+	{ 
+		addToZerolist(i); 
+	} 
+}  
+void printGraph() 
+{ 
+	int i; 
+	node *ptr;  
+	for( i=0; i<N; ++i ) 
+	node *ptr; 
+	printf( "%d: pred=%d: ", i, graph[i].count ); 
+	for( ptr=graph[i].next; ptr; ptr=ptr->next ) 
+	printf( "%d ", ptr->count ); 
+	printf( "\n" ); } 
+	printf( "zerolist: " ); 
+	for( ptr=zerolist; ptr; ptr=ptr->next ) 
+	printf( "%d ", ptr->count ); 
+	printf( "\n" ); 
+}  
+int getZeroVertex() 
+{
+	 /* * returns the vertex with zero predecessors. * if no such vertex then returns −1. */ 
+	int v; 
+	node *ptr;  
+	if( zerolist == NULL ) 
+	return −1; 
+	ptr = zerolist; 
+	v = ptr->count; 
+	zerolist = zerolist->next; 
+	free(ptr);  
+	return v; 
+}  
+void removeVertex( int v ) 
+{ /* * deletes vertex v and its outgoing edges from global graph. */ 
+	node *ptr; 
+	graph[v].count = −1; // free the list graph[v].next. 
+	for( ptr=graph[v].next; ptr; ptr=ptr->next ) 
+	if( graph[ ptr->count ].count > 0 ) // normal nodes. 
+	graph[ ptr->count ].count-; 
+	if( graph[ ptr->count ].count == 0 ) // this is NOT else of above 
+	if. addToZerolist( ptr->count ); } 
+}  
+void topsort( int nvert ) 
+{ 
+/* * finds recursively topological order of global graph. * nvert vertices of graph are needed to be ordered. */ 
+	int v;  
+	if( nvert > 0 ) 
+	{ 
+		v = getZeroVertex(); 
+		if( v == −1 ) 
+		{ // no such vertex. 
+		fprintf( stderr, "graph contains a cycle.\n" ); 
+		return; 
+	} 
+	printf( "%d.\n", v ); 
+	removeVertex(v); 
+	topsort( nvert-1 ); 
+} 
+}  
+int main() 
+{ 
+	int a[][2] = { {0,1}, {0,3}, {0,2}, {1,4}, {2,4}, {2,5}, {3,4}, {3,5} }; 
+	buildGraph( a, 8 ); 
+	printGraph(); 
+	topsort(N); 
+}
+

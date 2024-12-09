@@ -1,0 +1,36 @@
+LEX
+%{
+#include"y.tab.h"
+extern yylval;
+%}
+%%
+[0-9]+ {yylval=atoi(yytext); return DIGIT;}
+[a-zA-Z]+ {return LETTER;}
+[\t] ;
+\n return 0;
+. {return yytext[0];}
+%%
+YACC
+%{
+#include<stdio.h>
+%}
+%token LETTER DIGIT
+%%
+variable: LETTER|LETTER rest
+;
+rest: LETTER rest
+|DIGIT rest
+|LETTER
+|DIGIT
+;
+%%
+main()
+{
+	yyparse();
+	printf("The string is a valid variable\n");
+}
+int yyerror(char *s)
+{
+	printf("this is not a valid variable\n");
+	exit(0);
+}
